@@ -1,0 +1,86 @@
+#include <iostream>
+using namespace std;
+
+int main() {
+    int choice;
+    int h[8], data[4];
+
+    cout << " Hamming Code (7,4) " << endl;
+    cout << "1. Encode" << endl;
+    cout << "2. Decode" << endl;
+    cout << "Enter your choice: ";
+    cin >> choice;
+
+    switch(choice) {
+
+        case 1:
+        {
+            cout << "\nEnter 4-bit message: ";
+            for(int i = 0; i < 4; i++)
+                cin >> data[i];
+
+            // Place data bits
+            h[5] = data[0];
+            h[3] = data[1];
+            h[2] = data[2];
+            h[1] = data[3];
+
+            // Calculate parity bits (Even Parity)
+            h[7] = h[3] ^ h[5] ^ h[1];
+            h[6] = h[5] ^ h[2] ^ h[1];
+            h[4] = h[3] ^ h[2] ^ h[1];
+
+            cout << "\nEncoded 7-bit Hamming Code: ";
+
+            for(int i = 1; i <= 7; i++)
+                cout << h[i] << " ";
+
+            cout << endl;
+            break;
+        }
+
+        case 2:
+        {
+            cout << "\nEnter received 7-bit Hamming Code: ";
+
+            for(int i = 1; i <= 7; i++)
+                cin >> h[i];
+
+            // Calculate syndrome bits
+            int s1 = h[1] ^ h[3] ^ h[5] ^ h[7];
+            int s2 = h[2] ^ h[5] ^ h[6] ^ h[1];
+            int s4 = h[4] ^ h[3] ^ h[2] ^ h[1];
+
+            int error = s4 * 4 + s2 * 2 + s1;
+
+            if(error == 0) {
+                cout << "\nNo Error Detected." << endl;
+            }
+            else {
+                cout << "\nError Detected at Position "
+                     << error << endl;
+
+                // Correct the error
+                h[error] ^= 1;
+
+                cout << "Corrected Hamming Code: ";
+
+                for(int i = 7; i >= 1; i--)
+                    cout << h[i] << " ";
+
+                cout << endl;
+            }
+
+            cout << "Decoded 4-bit Message: ";
+            cout << h[5] << " " << h[3] << " "
+                 << h[2] << " " << h[1] << endl;
+
+            break;
+        }
+
+        default:
+            cout << "Invalid choice!" << endl;
+    }
+
+    return 0;
+}
