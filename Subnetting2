@@ -1,0 +1,102 @@
+#include <iostream>
+#include <sstream>
+#include <string>
+using namespace std;
+
+void printIP(unsigned int ip)
+{
+    cout << ((ip >> 24) & 255) << "."
+         << ((ip >> 16) & 255) << "."
+         << ((ip >> 8) & 255) << "."
+         << (ip & 255);
+}
+
+int main()
+{
+    string cidr;
+
+    cout << "Enter IP address in CIDR notation: ";
+    cin >> cidr;
+
+    // Separate IP address and prefix
+    int slash = cidr.find('/');
+
+    string ip = cidr.substr(0, slash);
+    int prefix = stoi(cidr.substr(slash + 1));
+
+    // Read IP address
+    int a, b, c, d;
+    char dot;
+
+    stringstream ss(ip);
+    ss >> a >> dot >> b >> dot >> c >> dot >> d;
+
+    // Convert IP to 32-bit integer
+    unsigned int ipAddress =
+        (a << 24) | (b << 16) | (c << 8) | d;
+
+    // Calculate subnet mask
+    unsigned int mask;
+
+    if (prefix == 0)
+        mask = 0;
+    else
+        mask = 0xFFFFFFFF << (32 - prefix);
+
+    // Calculate network address
+    unsigned int network = ipAddress & mask;
+
+    // Calculate broadcast address
+    unsigned int broadcast = network | (~mask);
+
+    // Calculate number of addresses
+    unsigned long long totalAddresses =
+        1ULL << (32 - prefix);
+
+    // Calculate usable hosts
+    unsigned long long usableHosts;
+
+    if (prefix == 32)
+        usableHosts = 1;
+    else if (prefix == 31)
+        usableHosts = 2;
+    else
+        usableHosts = totalAddresses - 2;
+
+    cout << "\n--- Subnetting Details ---\n";
+
+    cout << "IP Address       : ";
+    printIP(ipAddress);
+    cout << "/" << prefix << endl;
+
+    cout << "Subnet Mask      : ";
+    printIP(mask);
+    cout << endl;
+
+    cout << "Network Address  : ";
+    printIP(network);
+    cout << endl;
+
+    cout << "Broadcast Address: ";
+    printIP(broadcast);
+    cout << endl;
+
+    cout << "Total Addresses  : "
+         << totalAddresses << endl;
+
+    cout << "Usable Hosts     : "
+         << usableHosts << endl;
+
+    if (prefix < 31)
+    {
+        cout << "First Host       : ";
+        printIP(network + 1);
+        cout << endl;
+
+        cout << "Last Host        : ";
+        printIP(broadcast - 1);
+        cout << endl;
+    }
+
+    return 0;
+}
