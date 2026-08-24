@@ -1,0 +1,124 @@
+#include <iostream>
+using namespace std;
+
+#define INF 999
+
+int main() {
+    int N;
+
+    cout << "Enter number of vertices: ";
+    cin >> N;
+
+    int cost[N][N];
+    int dist[N][N];
+    int nextHop[N][N];
+
+    // Enter cost matrix
+    cout << "\nEnter the distance matrix:\n";
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            cin >> cost[i][j];
+        }
+    }
+
+    // Initialize distance and next hop
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+
+            // Diagonal is 0
+            if (i == j) {
+                dist[i][j] = 0;
+                nextHop[i][j] = i;
+            }
+
+            // 0 means no connection
+            else if (cost[i][j] == 0) {
+                dist[i][j] = INF;
+                nextHop[i][j] = -1;
+            }
+
+            // Direct connection
+            else {
+                dist[i][j] = cost[i][j];
+                nextHop[i][j] = j;
+            }
+        }
+    }
+
+    // Floyd-Warshall Algorithm
+    for (int k = 0; k < N; k++) {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+
+                if (dist[i][k] != INF &&
+                    dist[k][j] != INF &&
+                    dist[i][j] > dist[i][k] + dist[k][j]) {
+
+                    dist[i][j] = dist[i][k] + dist[k][j];
+
+                    // Store first hop
+                    nextHop[i][j] = nextHop[i][k];
+                }
+            }
+        }
+    }
+
+    // Display shortest distance matrix
+    cout << "\nShortest Distance Matrix:\n\n";
+
+    cout << "    ";
+    for (int i = 0; i < N; i++) {
+        cout << i + 1 << "\t";
+    }
+    cout << endl;
+
+    for (int i = 0; i < N; i++) {
+        cout << i + 1 << " : ";
+
+        for (int j = 0; j < N; j++) {
+            if (dist[i][j] == INF)
+                cout << "INF\t";
+            else
+                cout << dist[i][j] << "\t";
+        }
+
+        cout << endl;
+    }
+
+    // Enter starting and destination vertex
+    int start, destination;
+
+    cout << "\nEnter starting vertex: ";
+    cin >> start;
+
+    cout << "\nEnter destination vertex: ";
+    cin >> destination;
+
+    // Convert to 0-based indexing
+    start--;
+    destination--;
+
+    // Print shortest distance
+    cout << "\nShortest distance from "
+         << start + 1 << " to "
+         << destination + 1 << " = "
+         << dist[start][destination] << endl;
+
+    // Print path
+    cout << "\nPath: ";
+
+    int current = start;
+
+    cout << current + 1;
+
+    while (current != destination) {
+        current = nextHop[current][destination];
+        cout << " -> " << current + 1;
+    }
+
+    cout << endl;
+
+
+    return 0;
+}
