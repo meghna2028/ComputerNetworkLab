@@ -1,28 +1,47 @@
 
-import socket
+#include <iostream>
+#include <cstring>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+using namespace std;
 
-# Create TCP socket
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+int main() {
+    int server_fd, client_fd;
+    char buffer[1024] = {0};
 
-# Bind socket to IP address and port
-server_socket.bind(("127.0.0.1", 12345))
+    // Create TCP socket
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-# Listen for client connection
-server_socket.listen(1)
-print("Server is waiting for a connection...")
+    // Configure server address
+    sockaddr_in address{};
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(12345);
 
-# Accept client connection
-client_socket, address = server_socket.accept()
-print("Connected to:", address)
+    // Bind socket
+    bind(server_fd, (struct sockaddr*)&address, sizeof(address));
 
-# Receive message from client
-message = client_socket.recv(1024).decode()
-print("Message from client:", message)
+    // Listen for connections
+    listen(server_fd, 1);
+    cout << "Server is waiting for a connection..." << endl;
 
-# Send reply to client
-reply = "Message received successfully!"
-client_socket.send(reply.encode())
+    // Accept client connection
+    socklen_t addrlen = sizeof(address);
+    client_fd = accept(server_fd, (struct sockaddr*)&address, &addrlen);
 
-# Close connections
-client_socket.close()
-server_socket.close()
+    // Receive message
+    memset(buffer, 0, sizeof(buffer));
+    recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+    cout << "Message from client: " << buffer << endl;
+
+    // Send reply
+    string reply = "Message received successfully!";
+    send(client_fd, reply.c_str(), reply.size(), 0);
+
+    // Close sockets
+    close(client_fd);
+    close(server_fd);
+
+    return 0;
+}
